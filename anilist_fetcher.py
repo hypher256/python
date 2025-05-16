@@ -6,7 +6,7 @@ import os
 API_URL = "https://graphql.anilist.co"
 OUTPUT_FOLDER = "/home/firefly/Notes/Logs/AniList"
 
-# Function that uses cli input to use in GraphQL query
+# GraphQL query to search and return media option
 def search_media(media_type, title):
     query = """
     query ($search: String, $type: MediaType) {
@@ -27,7 +27,7 @@ def search_media(media_type, title):
     #Return results for user to select from
     return response.json()["data"]["Page"]["media"]
 
-# Function that gets the full details on seleced media based on the selected media ID
+# Function that gets the full details on seleced media based on the selected media page option
 def get_media_details(media_id):
     query = """
     query ($id: Int) {
@@ -48,27 +48,26 @@ def get_media_details(media_id):
     }
     """
     variables = {"id": media_id}
-    # Return the full results
     response = requests.post(API_URL, json={"query": query, "variables": variables})
     return response.json()["data"]["Media"]
 
-# Create the .md file for obsidian in the folder we set
+    ## Create the .md file for obsidian in the folder we set
 def save_markdown(media, score, status):
     folder_name = "Anime" if media["type"] == "ANIME" else "Manga"
     output_path = os.path.join(OUTPUT_FOLDER, folder_name)
     os.makedirs(output_path, exist_ok=True)
 
-    # Title and filename
+    # Set the file name as the media title, replacing unsafe chracters
     title = media["title"].get("english") or media["title"].get("romaji") or media["title"].get("native")
     safe_title = "".join(c if c.isalnum() or c in (" ", "_", "-") else "_" for c in title).strip()
     filename = f"{safe_title}.md".replace("/", "-")
 
-    # Description cleanup
+    # Description cleanup, replcaing HTML syntax with md syntax
     description = media.get("description") or "No description available."
     description = description.replace("<br>", "\n").replace("<i>", "").replace("</i>", "")
     description = textwrap.fill(description, width=100)
 
-    # Genres
+    # Genres, removing spaces for the YAML table
     genres = media.get("genres", [])
     genres_list = [g.replace(" ", "") for g in genres]  
 
@@ -100,11 +99,11 @@ def save_markdown(media, score, status):
         f.write(f"media_type: {media['type'].lower()}\n")
         f.write(f"---\n\n")
     # --- Body of file ---
-#        f.write(f"## Status\n```dropdown\n{status}\n```")
-        f.write(f"### **Score**: {score}\n")
+        f.write(f"### **Score**: {score}\n") #Am considering making a dropdown menu for the status
         f.write(f"![[{image_filename}]]\n\n")
         f.write(f"## Description\n{description}\n")
 
+## Main function to use cli input
 def main():
     print("Select type:")
     print("1: Anime")
