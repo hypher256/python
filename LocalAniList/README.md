@@ -1,5 +1,3 @@
-# md
-
 ### What it does
 This code makes an API post request to anilist.com to fetch some details about the anime or manga you searched for.
 The idea is that after answering a few questions, you can pull in details on a media and automatically create an md file with the key details.

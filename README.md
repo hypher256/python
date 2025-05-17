@@ -1,5 +1,3 @@
-# md
-
 Python projects I've tinkered on.
 
 ### LocalAniList
