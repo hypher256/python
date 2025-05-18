@@ -1,3 +1,5 @@
+#!/usr/bin/python3
+
 import requests
 import textwrap
 import os
@@ -167,6 +169,7 @@ def save_markdown(media, score, status):
             f.write(f"#### {name}\n")
             f.write(f"![]({img})\n\n")
 def main():
+
     print("Select type:")
     print("1: Anime")
     print("2: Manga")
@@ -209,6 +212,7 @@ def main():
 
     save_markdown(full_details, score, status)
     print(f"\nEntry for {full_details['title']['english'] or full_details['title']['romaji']} saved!'")
+
 
 if __name__ == "__main__":
     main()
