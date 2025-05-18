@@ -146,7 +146,7 @@ def save_markdown(media, score, status):
         f.write(f'title: "{title}"\n')
         f.write(f"score: {score}\n")
         f.write(f"genres: [{', '.join(genres_list)}]\n")
-        f.write(f"cover: {image_filename}\n")
+        f.write(f"cover: '[[{image_filename}]]'\n")
         f.write(f"anilist_url: {media['siteUrl']}\n")
         f.write(f"media_type: {media['type'].lower()}\n")
         f.write(f"---\n\n---\n\n")
