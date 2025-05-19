@@ -64,6 +64,14 @@ def get_media_details(media_id):
     }
 }
 }
+        startDate {
+          year
+          month
+          day
+        }
+        season
+        seasonYear
+        source
         characters(perPage: 3, sort: [ROLE, RELEVANCE]){
             edges {
                 node {
@@ -137,6 +145,14 @@ def save_markdown(media, score, status):
     for char in characters:
         name = char["node"]["name"]["full"]
         image = char["node"]["image"]["large"]
+     # Airing start date
+        start = media["startDate"]
+        release_date = f"{start.get('year', '??')}-{start.get('month', '??'):02}-{start.get('day', '??'):02}"
+     # Season year
+    season = media.get("season", "Unknown")
+    season_year = media.get("seasonYear", "Unknown")
+    # Source
+    source = media.get("source", "Unknown")  # e.g. MANGA, NOVEL, ORIGINAL
 
     # --- Write Markdown File ---
     with open(os.path.join(output_path, filename), "w", encoding="utf-8") as f:
@@ -146,28 +162,34 @@ def save_markdown(media, score, status):
         f.write(f'title: "{title}"\n')
         f.write(f"score: {score}\n")
         f.write(f"genres: [{', '.join(genres_list)}]\n")
+        f.write(f"release_date: {release_date}\n")
+        f.write(f"season: {season} {season_year}\n")
+        f.write(f"source: {source}\n")
         f.write(f"cover: '[[{image_filename}]]'\n")
         f.write(f"anilist_url: {media['siteUrl']}\n")
         f.write(f"media_type: {media['type'].lower()}\n")
         f.write(f"---\n\n---\n\n")
     # --- Body of file ---
         f.write(f"### **Score**: {score}\n")
-        f.write(f"![[{image_filename}]]\n\n")
+        f.write(f"![[{image_filename}|300]]\n\n")
         f.write(f"## Description\n{description}\n\n---\n")
-        f.write(f"### **Studio**: {main_studio or 'Unknown'}\n---\n") 
+        f.write(f"### **Studio**: {main_studio or 'Unknown'}\n") 
+        f.write(f"### **Release Date:** {release_date}\n")
+        f.write(f"### **Season:** {season} {season_year}\n")
+        f.write(f"### **Source:** {source}\n---\n")
         f.write(f"### **Staff**\n\n")
         for staff_member in staff:
             name = staff_member["node"]["name"]["full"]
             role = staff_member["role"]
             img = staff_member["node"]["image"]["large"]
-            f.write(f"#### {name} - *{role}*\n")
-            f.write(f"![]({img})\n\n")
+            f.write(f"##### {name} - *{role}*\n")
+            f.write(f'<img src="{img}" width="100">\n\n')
         f.write("---\n### Characters\n\n")
         for char in characters:
             name = char["node"]["name"]["full"]
             img = char["node"]["image"]["large"]
-            f.write(f"#### {name}\n")
-            f.write(f"![]({img})\n\n")
+            f.write(f"##### {name}\n")
+            f.write(f'<img src="{img}" width="100">\n\n')
 def main():
 
     print("Select type:")
