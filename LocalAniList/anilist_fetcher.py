@@ -1,5 +1,6 @@
 #!/usr/bin/python3
 
+import time
 import requests
 import textwrap
 import os
@@ -25,9 +26,22 @@ def search_media(media_type, title):
     }
     """
     variables = {"search": title, "type": media_type.upper()}
-    response = requests.post(API_URL, json={"query": query, "variables": variables})
-    #Return results for user to select from
-    return response.json()["data"]["Page"]["media"]
+    for i in range (0,5):
+        while True:
+            try:
+                response = requests.post(API_URL, json={"query": query, "variables": variables})
+                #Return results for user to select from
+                return response.json()["data"]["Page"]["media"]
+            except: 
+                print("Searching\r",)
+                continue 
+              #  for i in range (3):
+               #     while True:
+                #        if i < 3:
+                 #           print(".\r",)
+                  #          time.sleep(1)
+                   #     else:
+                    #        break
 
 # Function that gets the full details on seleced media based on the selected media ID
 def get_media_details(media_id):
@@ -72,7 +86,7 @@ def get_media_details(media_id):
         season
         seasonYear
         source
-        characters(perPage: 3, sort: [ROLE, RELEVANCE]){
+        characters(perPage: 25, sort: [ROLE, RELEVANCE]){
             edges {
                 node {
                     name{
@@ -146,11 +160,24 @@ def save_markdown(media, score, status):
         name = char["node"]["name"]["full"]
         image = char["node"]["image"]["large"]
      # Airing start date
-        start = media["startDate"]
-        release_date = f"{start.get('year', '??')}-{start.get('month', '??'):02}-{start.get('day', '??'):02}"
-     # Season year
+    start = media.get("startDate", {})
+    year = start.get("year")
+    month = start.get("month")
+    day = start.get("day")
+    release_date = "Unknown"
+    if isinstance(year, int) and isinstance(month, int) and isinstance(day, int):
+        release_date = f"{year}-{month:02}-{day:02}"
+    elif isinstance(year, int) and isinstance(month, int):
+        release_date = f"{year}-{month:02}"
+    elif isinstance(year, int):
+        release_date = str(year)
+    # Season year
     season = media.get("season", "Unknown")
     season_year = media.get("seasonYear", "Unknown")
+    if season == "None" and season_year == "None":
+        season_display = "Unknown"
+    else:
+        season_display = f"{season} {season_year}".strip()
     # Source
     source = media.get("source", "Unknown")  # e.g. MANGA, NOVEL, ORIGINAL
 
@@ -163,7 +190,8 @@ def save_markdown(media, score, status):
         f.write(f"score: {score}\n")
         f.write(f"genres: [{', '.join(genres_list)}]\n")
         f.write(f"release_date: {release_date}\n")
-        f.write(f"season: {season} {season_year}\n")
+        if media['type'] == "ANIME":
+            f.write(f"season: {season_display}\n")
         f.write(f"source: {source}\n")
         f.write(f"cover: '[[{image_filename}]]'\n")
         f.write(f"anilist_url: {media['siteUrl']}\n")
@@ -173,9 +201,10 @@ def save_markdown(media, score, status):
         f.write(f"### **Score**: {score}\n")
         f.write(f"![[{image_filename}|300]]\n\n")
         f.write(f"## Description\n{description}\n\n---\n")
-        f.write(f"### **Studio**: {main_studio or 'Unknown'}\n") 
+        if media['type'] == "ANIME":
+            f.write(f"### **Studio**: {main_studio or 'Unknown'}\n") 
+            f.write(f"### **Season:** {season} {season_year}\n")
         f.write(f"### **Release Date:** {release_date}\n")
-        f.write(f"### **Season:** {season} {season_year}\n")
         f.write(f"### **Source:** {source}\n---\n")
         f.write(f"### **Staff**\n\n")
         for staff_member in staff:
