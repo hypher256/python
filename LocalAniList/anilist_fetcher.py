@@ -27,21 +27,15 @@ def search_media(media_type, title):
     """
     variables = {"search": title, "type": media_type.upper()}
     for i in range (0,5):
-        while True:
+        if i <=5:
             try:
                 response = requests.post(API_URL, json={"query": query, "variables": variables})
                 #Return results for user to select from
                 return response.json()["data"]["Page"]["media"]
             except: 
-                print("Searching\r",)
+                print("API busy, trying again...\r",)
+                time.sleep(2) 
                 continue 
-              #  for i in range (3):
-               #     while True:
-                #        if i < 3:
-                 #           print(".\r",)
-                  #          time.sleep(1)
-                   #     else:
-                    #        break
 
 # Function that gets the full details on seleced media based on the selected media ID
 def get_media_details(media_id):
@@ -196,6 +190,7 @@ def save_markdown(media, score, status):
         f.write(f"cover: '[[{image_filename}]]'\n")
         f.write(f"anilist_url: {media['siteUrl']}\n")
         f.write(f"media_type: {media['type'].lower()}\n")
+        f.write(f"main_page: '[[AniList Dashboard]]'\n")
         f.write(f"---\n\n---\n\n")
     # --- Body of file ---
         f.write(f"### **Score**: {score}\n")
