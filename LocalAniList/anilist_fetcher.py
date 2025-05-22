@@ -33,7 +33,7 @@ def search_media(media_type, title):
                 #Return results for user to select from
                 return response.json()["data"]["Page"]["media"]
             except: 
-                print("API busy, trying again...\r",)
+                print("API busy :T, trying again...\r",)
                 time.sleep(2) 
                 continue 
 
@@ -59,7 +59,7 @@ def get_media_details(media_id):
             }
         }
     }
-        staff(perPage: 2){
+        staff(perPage: 4){
         edges {
         role
         node {
@@ -80,7 +80,7 @@ def get_media_details(media_id):
         season
         seasonYear
         source
-        characters(perPage: 25, sort: [ROLE, RELEVANCE]){
+        characters(perPage: 6, sort: [ROLE, RELEVANCE]){
             edges {
                 node {
                     name{
@@ -95,6 +95,10 @@ def get_media_details(media_id):
         genres
         siteUrl
         type
+        episodes
+        duration
+        chapters
+        volumes
       }
     }
     """
@@ -138,6 +142,20 @@ def save_markdown(media, score, status):
         print(f"Failed to download image: {e}")
         image_filename = ""  # fallback if download fails
 
+    # Anime length
+    episodes = media.get("episodes")
+    duration = media.get("duration")
+
+    if isinstance(episodes, int) and isinstance (duration, int):
+            watch_time = episodes * duration # minutes
+    else:
+            watch_time = "Unknown"
+
+    # Manga Length
+    chapters = media.get("chapters")
+    volumes = media.get("volumes")
+
+    
     # Get Studio
     studio_edges = media["studios"]["edges"]
     main_studio = next((s["node"]["name"] for s in studio_edges if s["isMain"]), None)
@@ -179,6 +197,7 @@ def save_markdown(media, score, status):
     with open(os.path.join(output_path, filename), "w", encoding="utf-8") as f:
     # --- YAML Properties ---
         f.write(f"---\n")
+        f.write(f"media_type: {media['type'].lower()}\n")
         f.write(f"status: {status}\n")
         f.write(f'title: "{title}"\n')
         f.write(f"score: {score}\n")
@@ -186,10 +205,15 @@ def save_markdown(media, score, status):
         f.write(f"release_date: {release_date}\n")
         if media['type'] == "ANIME":
             f.write(f"season: {season_display}\n")
+            f.write(f"episodes: {episodes or 'Unknown'}\n")
+            f.write(f"duration: {duration or 'Unknown'}\n")
+            f.write(f"watch_time: {watch_time or 'Unknown'}\n")
+        elif media['type'] == "MANGA":
+            f.write(f"chapters: {chapters or 'Unknown'}\n")
+            f.write(f"volumes: {volumes or 'Unknown'}\n") 
         f.write(f"source: {source}\n")
         f.write(f"cover: '[[{image_filename}]]'\n")
         f.write(f"anilist_url: {media['siteUrl']}\n")
-        f.write(f"media_type: {media['type'].lower()}\n")
         f.write(f"main_page: '[[AniList Dashboard]]'\n")
         f.write(f"---\n\n---\n\n")
     # --- Body of file ---
@@ -201,14 +225,14 @@ def save_markdown(media, score, status):
             f.write(f"### **Season:** {season} {season_year}\n")
         f.write(f"### **Release Date:** {release_date}\n")
         f.write(f"### **Source:** {source}\n---\n")
-        f.write(f"### **Staff**\n\n")
+        f.write(f"### **Key Staff**\n\n")
         for staff_member in staff:
             name = staff_member["node"]["name"]["full"]
             role = staff_member["role"]
             img = staff_member["node"]["image"]["large"]
             f.write(f"##### {name} - *{role}*\n")
             f.write(f'<img src="{img}" width="100">\n\n')
-        f.write("---\n### Characters\n\n")
+        f.write("---\n### Key Characters\n\n")
         for char in characters:
             name = char["node"]["name"]["full"]
             img = char["node"]["image"]["large"]
@@ -226,7 +250,7 @@ def main():
     results = search_media(media_type, title)
 
     if not results:
-        print("No results found.")
+        print("No results found or API busy :c")
         return
 
     print("\nSelect one:")
@@ -241,16 +265,18 @@ def main():
     score = input("Score out of 10?: ").strip()
     score = int(score) if score.isdigit() else None
     
+    status_label = "Watching" if media_type == "ANIME" else "Reading"    
+    
     print("\nStatus?")
     print("1: Completed")
-    print("2: Watching/Reading")
+    print(f"2: {status_label}")
     print("3: Planning")
 
     status_choice = input("Status Option: ").strip()
 
     status_map = {
         "1": "Completed",
-        "2": "Watching/Reading",
+        "2": status_label,
         "3": "Planning"
     }
 
