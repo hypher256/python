@@ -162,15 +162,15 @@ def save_markdown(media, score, status):
 
     # Get Staff
     staff = media["staff"]["edges"]
-    for person in staff:
-            name = person["node"]["name"]["full"]
-            role = person["role"]
-            image = person["node"]["image"]["large"]
+#    for person in staff:
+#            name = person["node"]["name"]["full"]
+#            role = person["role"]
+#            image = person["node"]["image"]["large"]
     # Get Charcaters
     characters = media["characters"]["edges"]
-    for char in characters:
-        name = char["node"]["name"]["full"]
-        image = char["node"]["image"]["large"]
+#    for char in characters:
+#        name = char["node"]["name"]["full"]
+#        image = char["node"]["image"]["large"]
      # Airing start date
     start = media.get("startDate", {})
     year = start.get("year")
