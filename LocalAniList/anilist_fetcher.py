@@ -7,7 +7,7 @@ import os
 
 # Defining Key Variables
 API_URL = "https://graphql.anilist.co"
-OUTPUT_FOLDER = "/home/firefly/Notes/Logs/AniList"
+OUTPUT_FOLDER = "/home/firefly/Notes/Logs/Media"
 
 # Function that uses cli input to use in GraphQL query
 def search_media(media_type, title):
@@ -214,7 +214,7 @@ def save_markdown(media, score, status):
         f.write(f"source: {source}\n")
         f.write(f"cover: '[[{image_filename}]]'\n")
         f.write(f"anilist_url: {media['siteUrl']}\n")
-        f.write(f"main_page: '[[AniList Dashboard]]'\n")
+        f.write(f"main_page: '[[Media Dashboard]]'\n")
         f.write(f"---\n\n---\n\n")
     # --- Body of file ---
         f.write(f"### **Score**: {score}\n")
